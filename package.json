@@ -1,0 +1,28 @@
+{
+  "name": "eth-transactions-exporter",
+  "version": "0.0.1",
+  "description": "Fetch all ETH transactions and export them using san-exporter",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/santiment/eth-transactions-exporter.git"
+  },
+  "author": "Valentin Mihov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/santiment/eth-transactions-exporter/issues"
+  },
+  "homepage": "https://github.com/santiment/eth-transactions-exporter",
+  "dependencies": {
+    "micro": "^9.3.3",
+    "prom-client": "^11.5.3",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7",
+    "san-exporter": "git+https://github.com/santiment/san-exporter.git",
+    "uuid": "^3.3.2",
+    "web3-utils": "^1.2.1"
+  },
+  "scripts": {
+    "start": "micro -l tcp://0.0.0.0:3000"
+  }
+}
