@@ -8,6 +8,7 @@ const { Exporter } = require('san-exporter')
 const rp = require('request-promise-native')
 const uuidv1 = require('uuid/v1')
 const metrics = require('./src/metrics')
+const { logger } = require('./logger')
 const exporter = new Exporter(pkg.name)
 
 const CONFIRMATIONS = parseInt(process.env.CONFIRMATIONS || "3")
@@ -82,7 +83,7 @@ const getCurrentBlock = () => {
 async function work() {
   const currentBlock = await getCurrentBlock() - CONFIRMATIONS
 
-  console.info(`Fetching transactions for interval ${lastProcessedPosition.blockNumber}:${currentBlock}`)
+  logger.info(`Fetching transactions for interval ${lastProcessedPosition.blockNumber}:${currentBlock}`)
 
   while (lastProcessedPosition.blockNumber < currentBlock) {
     const toBlock = Math.min(lastProcessedPosition.blockNumber + BLOCK_INTERVAL, currentBlock)
@@ -97,7 +98,7 @@ async function work() {
         transactions[i] = transformTransaction(transactions[i])
       }
 
-      console.info(`Storing and setting primary keys ${transactions.length} transactions for blocks ${lastProcessedPosition.blockNumber + 1}:${toBlock}`)
+      logger.info(`Storing and setting primary keys ${transactions.length} transactions for blocks ${lastProcessedPosition.blockNumber + 1}:${toBlock}`)
 
       await exporter.sendDataWithKey(transactions, "primaryKey")
 
@@ -106,14 +107,14 @@ async function work() {
 
     lastProcessedPosition.blockNumber = toBlock
     await exporter.savePosition(lastProcessedPosition)
-    console.info(`Progressed to block ${toBlock}`)
+    logger.info(`Progressed to block ${toBlock}`)
   }
 }
 
 async function fetchTransactions() {
   await work()
     .then(() => {
-      console.log(`Progressed to position ${JSON.stringify(lastProcessedPosition)}`)
+      logger.log(`Progressed to position ${JSON.stringify(lastProcessedPosition)}`)
 
       // Look for new events every 30 sec
       setTimeout(fetchTransactions, 30 * 1000)
@@ -125,10 +126,10 @@ async function initLastProcessedBlock() {
 
   if (lastPosition) {
     lastProcessedPosition = lastPosition
-    console.info(`Resuming export from position ${JSON.stringify(lastPosition)}`)
+    logger.info(`Resuming export from position ${JSON.stringify(lastPosition)}`)
   } else {
     await exporter.savePosition(lastProcessedPosition)
-    console.info(`Initialized exporter with initial position ${JSON.stringify(lastProcessedPosition)}`)
+    logger.info(`Initialized exporter with initial position ${JSON.stringify(lastProcessedPosition)}`)
   }
 }
 
