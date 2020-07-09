@@ -116,7 +116,7 @@ async function work() {
 async function fetchTransactions() {
   await work()
     .then(() => {
-      logger.log(`Progressed to position ${JSON.stringify(lastProcessedPosition)}`)
+      logger.info(`Progressed to position ${JSON.stringify(lastProcessedPosition)}`)
 
       // Look for new events every 30 sec
       setTimeout(fetchTransactions, 30 * 1000)
