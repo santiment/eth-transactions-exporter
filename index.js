@@ -7,7 +7,7 @@ const { send } = require('micro')
 const { Exporter } = require('san-exporter')
 const rp = require('request-promise-native')
 const uuidv1 = require('uuid/v1')
-const metrics = require('./src/metrics')
+const metrics = require('san-exporter/metrics')
 const { logger } = require('./logger')
 const exporter = new Exporter(pkg.name)
 
@@ -82,6 +82,7 @@ const getCurrentBlock = () => {
 
 async function work() {
   const currentBlock = await getCurrentBlock() - CONFIRMATIONS
+  metrics.currentBlock.set(currentBlock)
 
   logger.info(`Fetching transactions for interval ${lastProcessedPosition.blockNumber}:${currentBlock}`)
 
@@ -107,6 +108,7 @@ async function work() {
 
     lastProcessedPosition.blockNumber = toBlock
     await exporter.savePosition(lastProcessedPosition)
+    metrics.lastExportedBlock.set(lastProcessedPosition.blockNumber);
     logger.info(`Progressed to block ${toBlock}`)
   }
 }
@@ -162,8 +164,6 @@ module.exports = async (request, response) => {
         .catch((err) => send(response, 500, `Connection to kafka failed: ${err}`))
 
     case '/metrics':
-      metrics.currentLedger.set(lastProcessedPosition.blockNumber)
-
       response.setHeader('Content-Type', metrics.register.contentType);
       return send(response, 200, metrics.register.metrics())
 
